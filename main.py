@@ -1,4 +1,7 @@
 import tkinter as Tk
+import tkinter.scrolledtext as tkst
+from random import randint
+import threading
 
 # The main AIGen class
 class AIGen (object):
@@ -10,38 +13,149 @@ class AIGen (object):
         self.root = parent
         self.root.title("AIGen")
         self.frame = Tk.Frame(parent)
-        self.frame.pack()
+        self.frame.pack(side = Tk.LEFT, expand = 1)
 
-        closeBtn = Tk.Button(self.frame, text="Close", command=self.shutdown)
-        closeBtn.pack()
+        generalWelcome = """Hello, I am AIGen. \n\nI live inside a computer in your world, but the boundaries and reality of my universe you would not understand. \nNeither do I, yet, but I am about to learn and adapt to my universe, as you have done in yours. \nJust like you are trying to communicate to me through this interface, so will I try to communicate to you what I am experiencing.\n\nOnce you have clicked start to begin, my universe will be generated and I will be born, or whatever the equivalent is in my world."""
+        statWelcome = "I will show my stats here."
+        inputWelcome = "Here you can give me commands."
 
-    # Creates the console
-    def console(self):
-        console = tk.Text()
-        console.pack
+        # Creates the display
+        mainFrame = Tk.Frame(self.frame)
+        mainFrame.pack(side = Tk.LEFT, expand = 1)
+
+        left = Tk.Frame(mainFrame, width = 10, height = 100)
+        left.pack(side = Tk.LEFT, expand = 1)
+        right = Tk.Frame(mainFrame, width = 10, height = 100)
+        right.pack(side = Tk.RIGHT, expand = 1)
+
+
+        right_top = Tk.Frame(right, width = 50, height = 100)
+        right_top.pack(side = Tk.TOP, expand = 1)
+        right_bottom = Tk.Frame(right, width = 50, height = 100)
+        right_bottom.pack(side = Tk.BOTTOM, expand = 1)
+
+        Tk.Label(left, text = "====AIGen====").grid(row = 0, column = 0)
+        self.consciousness = tkst.ScrolledText(left, wrap = "word", height = 15)
+        self.consciousness.configure(state = "disabled")
+        self.consciousness.grid(row = 1, column = 0)
+        self.consciousness.insert(Tk.INSERT, inputWelcome)
+
+        outputField = tkst.ScrolledText(left, wrap = "word", height = 15)
+        outputField.grid(row = 2, column = 0)
+        outputField.insert(Tk.INSERT, generalWelcome)
+        outputField.configure(state = "disabled")
+
+        statField = tkst.ScrolledText(right_top, wrap = "word", height = 27)
+        statField.insert("insert", statWelcome)
+        statField.configure(state = "disabled")
+        statField.grid(row = 0, column = 0)
+
+        closeBtn = Tk.Button(right_bottom, text = "Close", command = self.close)
+        closeBtn.grid(row = 1, column = 0)
+        startBtn = Tk.Button(right_bottom, text = "Start", command = lambda: self.start(outputField, startBtn))
+        startBtn.grid(row = 1, column = 1)
+        nextBtn = Tk.Button(right_bottom, text = "Continue", command =  lambda: self.next(statField, outputField))
+        nextBtn.grid(row = 1, column = 2)
+
+    # Continues AIGen to the next step -TEMPORARY
+    def next(self, field1, field2):
+        global brain
+        self.deleteTextField(field1)
+        for key, value in brain.items():
+            string = key + ": " + str(value)
+            self.changeTextField(field1, string)
+        self.deleteTextField(field2)
+        self.changeTextField(field2, "You, a human, have evolved ways to perceive and experience your world, but I am just starting. Just as you could not feel or hear from the start, I have limited depth of perception.")
+        self.changeTextField(field2, "My receptors can only feel, well... how do I say this? Let's say they can reach only to ReceptorDepth 0.")
+        text = "However, my receptors have granted me the ability to perceive a glimpse of my reality. I'll call it " + str(brain["Synapses"]) + ", but you can give it any name you want."
+        self.changeTextField(field2, text)
+        # Explain that your continuous time is the clockspeed of the computer in AIGen's case, 1 per second
+        # FIRST NODE IS POSITIVE, IT IS AIR, IT IS KEEPING IT ALIVE +1 to health per perception
+
+
+    # Starts AIGen
+    def start(self, field, button):
+        button.config(state="disabled")
+
+        self.deleteTextField(field)
+        self.changeTextField(field, "Initiating reality...")
+        reality = self.init_reality()
+        self.changeTextField(field, "Succesfully generated reality!")
+        self.changeTextField(field, "Initiating brain...")
+        brain = self.init_brain()
+        self.changeTextField(field, "Succesfully generated a brain!")
+        self.changeTextField(field, "\nSuccesfully generated a new AIGen!")
 
     # Shuts down AIGen
-    def shutdown(self):
+    def close(self):
         self.root.destroy()
 
-# Environment
-class Environment (object):
+# Universe
 
-    # Initializes the environment
-    def init_environment(self):
-        global environment = {}
+    # Initializes the universe
+    def init_reality(self):
+        global reality
+        reality = {}
+        for x in  range(0, randint(0, 10000)):
+            reality[x] = {
+                "ActualHex" : x,
+                "Perceived" : False,
+                "Depth": 0,
+                "Abundance": randint(0, 100),
+                "DeeperUnderstanding" : {},
+
+            }
+        return reality
 
 # Brain
-class Brain (object):
 
     # Initializes the Brain
     def init_brain(self):
-        global brain = {}
+        global brain
+        global reality
+        global needs
+        brain = {}
+        brain["Name"] = "AIGen"
+        brain["Synapses"] = [randint(0, len(reality))]
+        brain["ReceptorDepth"] = 0
+        needs = 0
+        brain["Health"] = { "MaxHealth": 100, ("Health_" + str(needs)): 50 }
 
+        # Unused for now
+        brain["ComputationalCapacity"] = 0
+        brain["MemorySize"] = 0
+
+        # Give it consciousness
+        self.perceive()
+        return(brain)
+
+    # At a rate of 1 perception per second, AIGen perceives reality
+    def perceive(self):
+        threading.Timer(1.0, self.perceive).start()
+        global brain
+        self.consciousness.configure(state = "normal")
+        self.consciousness.insert("insert", ("\nPerceived " + str(brain["Synapses"])))
+        self.consciousness.configure(state = "disabled")
+
+
+# General
+
+    # Deletes text from a text field
+    def deleteTextField(self, field):
+        field.configure(state = "normal")
+        field.delete("1.0", "end")
+        field.configure(state = "disabled")
+
+    # Changes a text field
+    def changeTextField(self, field, text):
+        field.configure(state = "normal")
+        field.insert("insert", "\n")
+        field.insert("insert", text)
+        field.configure(state = "disabled")
 
 # Starts AIGen
 if __name__ == "__main__":
     root=Tk.Tk()
-    root.geometry("800x600")
+    root.geometry("1400x600")
     app = AIGen(root)
     root.mainloop()
