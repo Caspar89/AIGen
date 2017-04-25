@@ -50,32 +50,52 @@ class AIGen (object):
         statField.configure(state = "disabled")
         statField.grid(row = 0, column = 0)
 
+        nextBtn = Tk.Button(right_bottom, text = "Continue", command =  lambda: self.cont(statField, outputField))
+        nextBtn.grid(row = 1, column = 2)
+        nextBtn.config(state="disabled")
         closeBtn = Tk.Button(right_bottom, text = "Close", command = self.close)
         closeBtn.grid(row = 1, column = 0)
-        startBtn = Tk.Button(right_bottom, text = "Start", command = lambda: self.start(outputField, startBtn))
+        startBtn = Tk.Button(right_bottom, text = "Start", command = lambda: self.start(outputField, startBtn, nextBtn))
         startBtn.grid(row = 1, column = 1)
-        nextBtn = Tk.Button(right_bottom, text = "Continue", command =  lambda: self.next(statField, outputField))
-        nextBtn.grid(row = 1, column = 2)
+        global nextStepsTaken
+        nextStepsTaken = 0
 
     # Continues AIGen to the next step -TEMPORARY
-    def next(self, field1, field2):
+    def cont(self, field1, field2):
         global brain
-        self.deleteTextField(field1)
-        for key, value in brain.items():
-            string = key + ": " + str(value)
-            self.changeTextField(field1, string)
-        self.deleteTextField(field2)
-        self.changeTextField(field2, "You, a human, have evolved ways to perceive and experience your world, but I am just starting. Just as you could not feel or hear from the start, I have limited depth of perception.")
-        self.changeTextField(field2, "My receptors can only feel, well... how do I say this? Let's say they can reach only to ReceptorDepth 0.")
-        text = "However, my receptors have granted me the ability to perceive a glimpse of my reality. I'll call it " + str(brain["Synapses"]) + ", but you can give it any name you want."
-        self.changeTextField(field2, text)
+        global nextStepsTaken
+
+        if nextStepsTaken == 2:
+            self.deleteTextField(field2)
+            self.changeTextField(field2, "The synapse in my brain is created, which means that from now on I will remember having perceived " + str(brain["Synapses"]) + ".")
+            nextStepsTaken += 1
+
+        if nextStepsTaken == 2:
+            self.deleteTextField(field2)
+            self.changeTextField(field2, "However, my receptors have granted me the ability to perceive a glimpse of my reality. I'll call it " + str(brain["Synapses"]) + ", but you can give it any name you want.")
+            self.changeTextField(field2, "\nYou can keep track of my stats like my receptor depth and the parts of reality I have discovered on the right-hand side.")
+            nextStepsTaken += 1
+
+        if nextStepsTaken == 1:
+            self.deleteTextField(field2)
+            self.changeTextField(field2, "My receptors can only feel, well... how do I say this? Let's say they can reach only to ReceptorDepth 0.")
+            nextStepsTaken += 1
+
+        if nextStepsTaken == 0:
+            self.updateStats(field1)
+            self.deleteTextField(field2)
+            self.changeTextField(field2, "You, a human, have evolved ways to perceive and experience your world, but I am just starting. Just as you could not feel or hear from the start, I have limited depth of perception.")
+            nextStepsTaken += 1
+
+
         # Explain that your continuous time is the clockspeed of the computer in AIGen's case, 1 per second
         # FIRST NODE IS POSITIVE, IT IS AIR, IT IS KEEPING IT ALIVE +1 to health per perception
 
 
     # Starts AIGen
-    def start(self, field, button):
-        button.config(state="disabled")
+    def start(self, field, buttonStart, buttonNext):
+        buttonStart.config(state="disabled")
+        buttonNext.config(state="normal")
 
         self.deleteTextField(field)
         self.changeTextField(field, "Initiating reality...")
@@ -88,6 +108,9 @@ class AIGen (object):
 
     # Shuts down AIGen
     def close(self):
+        global alive
+
+        alive = False
         self.root.destroy()
 
 # Universe
@@ -95,6 +118,7 @@ class AIGen (object):
     # Initializes the universe
     def init_reality(self):
         global reality
+
         reality = {}
         for x in  range(0, randint(0, 10000)):
             reality[x] = {
@@ -114,6 +138,9 @@ class AIGen (object):
         global brain
         global reality
         global needs
+        global secondsAlive
+        global alive
+
         brain = {}
         brain["Name"] = "AIGen"
         brain["Synapses"] = [randint(0, len(reality))]
@@ -126,19 +153,37 @@ class AIGen (object):
         brain["MemorySize"] = 0
 
         # Give it consciousness
+        secondsAlive = 0
+        alive = True
         self.perceive()
         return(brain)
 
     # At a rate of 1 perception per second, AIGen perceives reality
     def perceive(self):
-        threading.Timer(1.0, self.perceive).start()
+        global alive
+        global secondsAlive
         global brain
-        self.consciousness.configure(state = "normal")
-        self.consciousness.insert("insert", ("\nPerceived " + str(brain["Synapses"])))
-        self.consciousness.configure(state = "disabled")
+
+        # Start next perception
+        if alive == True:
+            self.consciousness.configure(state = "normal")
+            self.consciousness.insert("insert", ("\n[" + str(secondsAlive) + "] Perceived " + str(brain["Synapses"])))
+            self.consciousness.see("end")
+            self.consciousness.configure(state = "disabled")
+            secondsAlive += 1
+            threading.Timer(1.0, self.perceive).start()
 
 
 # General
+
+    # Update the stats display
+    def updateStats(self, field):
+        global brain
+
+        self.deleteTextField(field)
+        for key, value in brain.items():
+            string = key + ": " + str(value)
+            self.changeTextField(field, string)
 
     # Deletes text from a text field
     def deleteTextField(self, field):
@@ -151,6 +196,7 @@ class AIGen (object):
         field.configure(state = "normal")
         field.insert("insert", "\n")
         field.insert("insert", text)
+        field.see("end")
         field.configure(state = "disabled")
 
 # Starts AIGen
