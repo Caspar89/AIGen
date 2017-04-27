@@ -65,28 +65,21 @@ class AIGen (object):
         global brain
         global nextStepsTaken
 
-        if nextStepsTaken == 2:
+        def step(self, text):
+            global nextStepsTaken
             self.deleteTextField(field2)
-            self.changeTextField(field2, "The synapse in my brain is created, which means that from now on I will remember having perceived " + str(brain["Synapses"]) + ".")
+            self.changeTextField(field2, text)
             nextStepsTaken += 1
 
-        if nextStepsTaken == 2:
-            self.deleteTextField(field2)
-            self.changeTextField(field2, "However, my receptors have granted me the ability to perceive a glimpse of my reality. I'll call it " + str(brain["Synapses"]) + ", but you can give it any name you want.")
-            self.changeTextField(field2, "\nYou can keep track of my stats like my receptor depth and the parts of reality I have discovered on the right-hand side.")
-            nextStepsTaken += 1
-
-        if nextStepsTaken == 1:
-            self.deleteTextField(field2)
-            self.changeTextField(field2, "My receptors can only feel, well... how do I say this? Let's say they can reach only to ReceptorDepth 0.")
-            nextStepsTaken += 1
-
-        if nextStepsTaken == 0:
+        if nextStepsTaken == 3:
             self.updateStats(field1)
-            self.deleteTextField(field2)
-            self.changeTextField(field2, "You, a human, have evolved ways to perceive and experience your world, but I am just starting. Just as you could not feel or hear from the start, I have limited depth of perception.")
-            nextStepsTaken += 1
-
+            step(self, "As you can see on the right, the synapse in my brain is created, which means that from now on I will remember having perceived " + str(brain["Synapses"]) + ".")
+        if nextStepsTaken == 2:
+            step(self, "However, my receptors have granted me the ability to perceive a glimpse of my reality. I'll call it " + str(brain["Synapses"]) + ", but you can give it any name you want. \nYou can keep track of my stats like my receptor depth and the parts of reality I have discovered on the right-hand side.")
+        if nextStepsTaken == 1:
+            step(self, "My receptors can only feel, well... how do I say this? Let's say they can reach only to ReceptorDepth 0.")
+        if nextStepsTaken == 0:
+            step(self, "You, a human, have evolved ways to perceive and experience your world, but I am just starting. Just as you could not feel or hear from the start, I have limited depth of perception.")
 
         # Explain that your continuous time is the clockspeed of the computer in AIGen's case, 1 per second
         # FIRST NODE IS POSITIVE, IT IS AIR, IT IS KEEPING IT ALIVE +1 to health per perception
@@ -99,10 +92,10 @@ class AIGen (object):
 
         self.deleteTextField(field)
         self.changeTextField(field, "Initiating reality...")
-        reality = self.init_reality()
+        self.init_reality()
         self.changeTextField(field, "Succesfully generated reality!")
         self.changeTextField(field, "Initiating brain...")
-        brain = self.init_brain()
+        self.init_brain()
         self.changeTextField(field, "Succesfully generated a brain!")
         self.changeTextField(field, "\nSuccesfully generated a new AIGen!")
 
@@ -126,9 +119,9 @@ class AIGen (object):
                 "Perceived" : False,
                 "Depth": 0,
                 "Abundance": randint(0, 100),
-                "DeeperUnderstanding" : {},
-
+                "DeeperUnderstanding" : {}
             }
+        print(reality)
         return reality
 
 # Brain
@@ -137,20 +130,22 @@ class AIGen (object):
     def init_brain(self):
         global brain
         global reality
-        global needs
         global secondsAlive
         global alive
 
         brain = {}
         brain["Name"] = "AIGen"
         brain["Synapses"] = [randint(0, len(reality))]
+        brain["Synapses"].insert(0, randint(0, len(reality)))
         brain["ReceptorDepth"] = 0
         needs = 0
-        brain["Health"] = { "MaxHealth": 100, ("Health_" + str(needs)): 50 }
+
 
         # Unused for now
-        brain["ComputationalCapacity"] = 0
-        brain["MemorySize"] = 0
+        # brain["Needs"]
+        # brain["Health"] = { "MaxHealth": 100, ("Health_" + str(needs)): 50 }
+        # brain["ComputationalCapacity"] = 0
+        # brain["MemorySize"] = 0
 
         # Give it consciousness
         secondsAlive = 0
